@@ -1,7 +1,7 @@
 import uuid
 from datetime import datetime, timezone, date
-from sqlalchemy import Column, String, Date, DateTime, ForeignKey, Enum, Float, Boolean, Text
-from sqlalchemy.dialects.postgresql import UUID, ARRAY
+from sqlalchemy import Column, String, Date, DateTime, ForeignKey, Enum, Float, Boolean, Text, JSON
+from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
 from app.core.database import Base
 from app.models.metric import MetricType
@@ -19,8 +19,8 @@ class PatientProfile(Base):
     emergency_contact_name = Column(String(150), nullable=True)
     emergency_contact_phone = Column(String(50), nullable=True)
     medical_history = Column(Text, nullable=True)
-    allergies = Column(ARRAY(String), default=list, nullable=True)
-    chronic_conditions = Column(ARRAY(String), default=list, nullable=True)
+    allergies = Column(JSON, default=list, nullable=True)
+    chronic_conditions = Column(JSON, default=list, nullable=True)
     
     created_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), nullable=False)
     updated_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc), nullable=False)

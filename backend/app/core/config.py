@@ -10,6 +10,7 @@ class Settings(BaseSettings):
     API_V1_STR: str = "/api/v1"
     ENVIRONMENT: str = "development"
     DEBUG: bool = True
+    USE_SQLITE: bool = True
 
     # Security
     SECRET_KEY: str = "pulsesync_super_secret_jwt_key_development_change_in_production_2026"
@@ -25,10 +26,16 @@ class Settings(BaseSettings):
     
     @property
     def SQLALCHEMY_DATABASE_URI(self) -> str:
+        if self.USE_SQLITE:
+            db_path = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), "pulsesync.db")
+            return f"sqlite+aiosqlite:///{db_path}"
         return f"postgresql+asyncpg://{self.POSTGRES_USER}:{self.POSTGRES_PASSWORD}@{self.POSTGRES_SERVER}:{self.POSTGRES_PORT}/{self.POSTGRES_DB}"
         
     @property
     def SYNC_DATABASE_URI(self) -> str:
+        if self.USE_SQLITE:
+            db_path = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), "pulsesync.db")
+            return f"sqlite:///{db_path}"
         return f"postgresql://{self.POSTGRES_USER}:{self.POSTGRES_PASSWORD}@{self.POSTGRES_SERVER}:{self.POSTGRES_PORT}/{self.POSTGRES_DB}"
 
     # Redis & Celery

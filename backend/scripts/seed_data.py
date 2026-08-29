@@ -1,3 +1,9 @@
+import os
+import sys
+
+# Ensure backend root is in PYTHONPATH
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
 import asyncio
 import random
 from datetime import datetime, timedelta, timezone, date
@@ -16,13 +22,14 @@ async def seed():
     engine = create_async_engine(settings.SQLALCHEMY_DATABASE_URI, echo=False)
     async_session = async_sessionmaker(engine, expire_on_commit=False)
 
-    print("Initializing database tables...")
+    print(f"Connecting to database: {settings.SQLALCHEMY_DATABASE_URI}")
+    print("Initializing database schema...")
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.drop_all)
         await conn.run_sync(Base.metadata.create_all)
 
     async with async_session() as db:
-        print("Creating default users...")
+        print("Seeding default authentication accounts...")
         pw_hash = get_password_hash("password123")
 
         # 1. Admin User
@@ -170,30 +177,30 @@ async def seed():
             m_time = day_dt.replace(hour=8, minute=random.randint(0, 45), second=0)
             
             # Blood Pressure for John (occasional elevation)
-            sys = round(random.gauss(128, 8))
-            dia = round(random.gauss(82, 5))
+            sys_val = round(random.gauss(128, 8))
+            dia_val = round(random.gauss(82, 5))
             if days_ago in [5, 22, 45]:
-                sys = 148
-                dia = 94
+                sys_val = 148
+                dia_val = 94
             
             bp_metric = HealthMetric(
                 patient_id=p_prof_1.id,
                 metric_type=MetricType.BLOOD_PRESSURE,
-                systolic=sys, diastolic=dia,
+                systolic=sys_val, diastolic=dia_val,
                 unit="mmHg", activity_context="RESTING",
                 notes="Morning resting measurement",
                 measured_at=m_time
             )
             metrics_to_add.append(bp_metric)
 
-            if sys >= 140 or dia >= 90:
+            if sys_val >= 140 or dia_val >= 90:
                 alerts_to_add.append(HealthAlert(
                     patient_id=p_prof_1.id,
-                    severity=AlertSeverity.WARNING if sys < 170 else AlertSeverity.CRITICAL,
+                    severity=AlertSeverity.WARNING if sys_val < 170 else AlertSeverity.CRITICAL,
                     title="Elevated Blood Pressure Alert",
-                    message=f"Blood Pressure reading {sys}/{dia} mmHg exceeded target warning limit.",
+                    message=f"Blood Pressure reading {sys_val}/{dia_val} mmHg exceeded target warning limit.",
                     metric_type="BLOOD_PRESSURE",
-                    recorded_value=f"{sys}/{dia} mmHg",
+                    recorded_value=f"{sys_val}/{dia_val} mmHg",
                     threshold_breached="Warning Max: 140/90 mmHg",
                     is_acknowledged=(days_ago > 7),
                     created_at=m_time
@@ -246,7 +253,7 @@ async def seed():
         ))
 
         await db.commit()
-        print("Database seeding script ready!")
+        print("Database successfully seeded with 60 days of realistic patient telemetry!")
 
 if __name__ == "__main__":
     asyncio.run(seed())
