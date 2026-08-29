@@ -1,7 +1,7 @@
 from typing import Optional
 from uuid import UUID
 from datetime import datetime
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 from app.models.doctor import AssignmentStatus
 
 class AssignmentBase(BaseModel):
@@ -17,6 +17,7 @@ class AssignmentUpdate(BaseModel):
     notes: Optional[str] = None
 
 class AssignmentResponse(AssignmentBase):
+    model_config = ConfigDict(from_attributes=True)
     id: UUID
     status: AssignmentStatus
     assigned_by_user_id: Optional[UUID] = None
@@ -24,6 +25,3 @@ class AssignmentResponse(AssignmentBase):
     updated_at: datetime
     doctor_name: Optional[str] = None
     patient_name: Optional[str] = None
-
-    class Config:
-        from_attributes = True

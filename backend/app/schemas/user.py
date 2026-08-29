@@ -1,7 +1,7 @@
 from typing import Optional
 from uuid import UUID
 from datetime import datetime
-from pydantic import BaseModel, EmailStr
+from pydantic import BaseModel, EmailStr, ConfigDict
 from app.models.user import UserRole
 
 class UserBase(BaseModel):
@@ -23,11 +23,9 @@ class UserUpdate(BaseModel):
     password: Optional[str] = None
 
 class UserResponse(UserBase):
+    model_config = ConfigDict(from_attributes=True)
     id: UUID
     is_verified: bool
     avatar_url: Optional[str] = None
     created_at: datetime
     updated_at: datetime
-
-    class Config:
-        from_attributes = True

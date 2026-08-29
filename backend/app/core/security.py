@@ -1,16 +1,40 @@
+import hashlib
+import secrets
 from datetime import datetime, timedelta, timezone
 from typing import Any, Union, Optional
 from jose import jwt, JWTError
-from passlib.context import CryptContext
 from app.core.config import settings
 
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
-
-def verify_password(plain_password: str, hashed_password: str) -> bool:
-    return pwd_context.verify(plain_password, hashed_password)
+def _hash_pbkdf2(password: str, salt: Optional[str] = None) -> str:
+    if not salt:
+        salt = secrets.token_hex(16)
+    key = hashlib.pbkdf2_hmac('sha256', password.encode('utf-8'), salt.encode('utf-8'), 100000)
+    return f"pbkdf2_sha256${salt}${key.hex()}"
 
 def get_password_hash(password: str) -> str:
-    return pwd_context.hash(password)
+    try:
+        from passlib.context import CryptContext
+        pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+        return pwd_context.hash(password)
+    except Exception:
+        # Secure fallback using standard library hashlib PBKDF2-HMAC-SHA256
+        return _hash_pbkdf2(password)
+
+def verify_password(plain_password: str, hashed_password: str) -> bool:
+    try:
+        if hashed_password.startswith("pbkdf2_sha256$"):
+            parts = hashed_password.split("$")
+            if len(parts) == 3:
+                salt = parts[1]
+                expected_hash = parts[2]
+                computed = hashlib.pbkdf2_hmac('sha256', plain_password.encode('utf-8'), salt.encode('utf-8'), 100000).hex()
+                return secrets.compare_digest(computed, expected_hash)
+        
+        from passlib.context import CryptContext
+        pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+        return pwd_context.verify(plain_password, hashed_password)
+    except Exception:
+        return False
 
 def create_access_token(subject: Union[str, Any], role: str, expires_delta: Optional[timedelta] = None) -> str:
     if expires_delta:

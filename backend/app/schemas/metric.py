@@ -1,7 +1,7 @@
 from typing import Optional, List
 from uuid import UUID
 from datetime import datetime
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 from app.models.metric import MetricType
 
 class MetricBase(BaseModel):
@@ -22,12 +22,10 @@ class MetricBulkCreate(BaseModel):
     metrics: List[MetricCreate]
 
 class MetricResponse(MetricBase):
+    model_config = ConfigDict(from_attributes=True)
     id: UUID
     patient_id: UUID
     created_at: datetime
-
-    class Config:
-        from_attributes = True
 
 class MetricStatsResponse(BaseModel):
     metric_type: MetricType

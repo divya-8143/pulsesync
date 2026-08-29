@@ -1,7 +1,7 @@
 from typing import Optional, List
 from uuid import UUID
 from datetime import date, datetime
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 from app.models.metric import MetricType
 
 class PatientProfileBase(BaseModel):
@@ -22,13 +22,11 @@ class PatientProfileUpdate(PatientProfileBase):
     pass
 
 class PatientProfileResponse(PatientProfileBase):
+    model_config = ConfigDict(from_attributes=True)
     id: UUID
     user_id: UUID
     created_at: datetime
     updated_at: datetime
-
-    class Config:
-        from_attributes = True
 
 class ThresholdSettingBase(BaseModel):
     metric_type: MetricType
@@ -47,11 +45,9 @@ class ThresholdSettingCreate(ThresholdSettingBase):
     pass
 
 class ThresholdSettingResponse(ThresholdSettingBase):
+    model_config = ConfigDict(from_attributes=True)
     id: UUID
     patient_id: UUID
     is_custom: bool
     created_at: datetime
     updated_at: datetime
-
-    class Config:
-        from_attributes = True

@@ -1,7 +1,7 @@
 from typing import Optional
 from uuid import UUID
 from datetime import date, datetime
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 from app.models.report import ReportType, ReportStatus
 
 class ReportCreateRequest(BaseModel):
@@ -12,6 +12,7 @@ class ReportCreateRequest(BaseModel):
     title: Optional[str] = None
 
 class ReportResponse(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
     id: UUID
     patient_id: UUID
     generated_by_user_id: UUID
@@ -26,6 +27,3 @@ class ReportResponse(BaseModel):
     error_message: Optional[str] = None
     created_at: datetime
     updated_at: datetime
-
-    class Config:
-        from_attributes = True

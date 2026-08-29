@@ -1,7 +1,7 @@
 from typing import Optional
 from uuid import UUID
 from datetime import datetime
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 from app.models.alert import AlertSeverity
 
 class AlertBase(BaseModel):
@@ -20,6 +20,7 @@ class AlertAcknowledgeRequest(BaseModel):
     action_taken: Optional[str] = None
 
 class AlertResponse(AlertBase):
+    model_config = ConfigDict(from_attributes=True)
     id: UUID
     patient_id: UUID
     metric_id: Optional[UUID] = None
@@ -28,6 +29,3 @@ class AlertResponse(AlertBase):
     acknowledged_at: Optional[datetime] = None
     action_taken: Optional[str] = None
     created_at: datetime
-
-    class Config:
-        from_attributes = True

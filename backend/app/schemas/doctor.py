@@ -1,7 +1,7 @@
 from typing import Optional
 from uuid import UUID
 from datetime import datetime
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 
 class DoctorProfileBase(BaseModel):
     specialization: str
@@ -24,13 +24,11 @@ class DoctorProfileUpdate(BaseModel):
     is_accepting_patients: Optional[bool] = None
 
 class DoctorProfileResponse(DoctorProfileBase):
+    model_config = ConfigDict(from_attributes=True)
     id: UUID
     user_id: UUID
     created_at: datetime
     updated_at: datetime
-
-    class Config:
-        from_attributes = True
 
 class ClinicalNoteBase(BaseModel):
     title: str
@@ -43,11 +41,9 @@ class ClinicalNoteCreate(ClinicalNoteBase):
     patient_id: UUID
 
 class ClinicalNoteResponse(ClinicalNoteBase):
+    model_config = ConfigDict(from_attributes=True)
     id: UUID
     doctor_id: UUID
     patient_id: UUID
     created_at: datetime
     updated_at: datetime
-
-    class Config:
-        from_attributes = True
