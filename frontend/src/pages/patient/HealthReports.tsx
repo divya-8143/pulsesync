@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { reportService } from '../../services/reportService';
 import { HealthReport, ReportType } from '../../types';
-import { FileText, Download, Plus } from 'lucide-react';
+import { FileText, Download, Plus, Loader2 } from 'lucide-react';
 import { format, subDays } from 'date-fns';
 
 export const HealthReports: React.FC = () => {
@@ -10,6 +10,7 @@ export const HealthReports: React.FC = () => {
   const [startDate, setStartDate] = useState(format(subDays(new Date(), 30), 'yyyy-MM-dd'));
   const [endDate, setEndDate] = useState(format(new Date(), 'yyyy-MM-dd'));
   const [isGenerating, setIsGenerating] = useState(false);
+  const [downloadingId, setDownloadingId] = useState<string | null>(null);
 
   const fetchReports = async () => {
     const data = await reportService.getReports();
@@ -26,6 +27,19 @@ export const HealthReports: React.FC = () => {
       await fetchReports();
     } finally {
       setIsGenerating(false);
+    }
+  };
+
+  const handleDownload = async (report: HealthReport) => {
+    try {
+      setDownloadingId(report.id);
+      const filename = `${report.title.replace(/[^a-zA-Z0-9_-]/g, '_')}.pdf`;
+      await reportService.downloadReportBlob(report.id, filename);
+    } catch (err) {
+      // Fallback: open authenticated URL in new tab
+      window.open(reportService.getDownloadUrl(report.id), '_blank');
+    } finally {
+      setDownloadingId(null);
     }
   };
 
@@ -77,9 +91,24 @@ export const HealthReports: React.FC = () => {
                     <p className="text-xs text-slate-500">{r.start_date} to {r.end_date} • {r.file_size_bytes || 'PDF Document'}</p>
                   </div>
                 </div>
-                <a href={reportService.getDownloadUrl(r.id)} target="_blank" rel="noreferrer" className="flex items-center space-x-1.5 px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium text-xs rounded-lg transition">
-                  <Download className="h-4 w-4" /><span>Download PDF</span>
-                </a>
+                <button
+                  type="button"
+                  onClick={() => handleDownload(r)}
+                  disabled={downloadingId === r.id}
+                  className="flex items-center space-x-1.5 px-3 py-1.5 bg-sky-50 hover:bg-sky-100 text-sky-700 font-medium text-xs rounded-lg transition border border-sky-200 disabled:opacity-50 cursor-pointer"
+                >
+                  {downloadingId === r.id ? (
+                    <>
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                      <span>Downloading...</span>
+                    </>
+                  ) : (
+                    <>
+                      <Download className="h-4 w-4" />
+                      <span>Download PDF</span>
+                    </>
+                  )}
+                </button>
               </div>
             ))
           )}
