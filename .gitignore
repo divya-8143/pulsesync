@@ -23,35 +23,32 @@ wheels/
 .pytest_cache/
 .coverage
 htmlcov/
-venv/
-ENV/
-.venv/
 
-# Node / Frontend
+# Node
 node_modules/
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
-dist/
-dist-ssr/
-*.local
 
-# Environment variables
+# Database & storage
+*.db
+*.sqlite
+*.sqlite3
+backend/pulsesync.db
+backend/storage/reports/*.pdf
+storage/reports/*.pdf
+
+# Environments & secrets (Only example.env is allowed)
 .env
-.env.local
-.env.*.local
+.env.*
+!.env.example
+!example.env
 
-# IDEs
+# Editor & OS
 .vscode/
 .idea/
 *.swp
 *.swo
 .DS_Store
 Thumbs.db
-
-# Storage & Temporary
-storage/reports/*.pdf
-storage/exports/*
-logs/
-*.log
